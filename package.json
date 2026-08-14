@@ -1,0 +1,26 @@
+{
+  "name": "revolt-events-consumer",
+  "version": "1.0.0",
+  "description": "Standalone Kafka consumer that writes raw events to ClickHouse",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "dependencies": {
+    "@clickhouse/client": "1.8.1",
+    "dotenv": "16.4.7",
+    "kafkajs": "2.2.4",
+    "mysql2": "^3.23.3",
+    "uuid": "11.0.5",
+    "winston": "3.17.0",
+    "winston-daily-rotate-file": "^5.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "3.1.9"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
