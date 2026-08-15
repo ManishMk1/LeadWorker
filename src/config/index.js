@@ -21,8 +21,14 @@ const config = {
     port: parseInt(process.env.MYSQL_PORT, 10) || 3306,
     user: process.env.MYSQL_USER || 'root',
     password: process.env.MYSQL_PASSWORD || '',
-    database: process.env.MYSQL_DATABASE || 'leads',
+    database: process.env.MYSQL_DATABASE || 'leads_automation',
     connectionLimit: parseInt(process.env.MYSQL_CONNECTION_LIMIT, 10) || 10,
+  },
+
+  redis: {
+    url: process.env.REDIS_URL || 'redis://localhost:6379',
+    anonTtlSeconds: parseInt(process.env.REDIS_ANON_TTL_SECONDS, 10) || 86400,
+    scoreConfigTtlSeconds: parseInt(process.env.REDIS_SCORE_CONFIG_TTL_SECONDS, 10) || 300,
   },
 
   clickhouse: {

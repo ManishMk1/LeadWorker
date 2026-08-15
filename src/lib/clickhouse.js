@@ -74,6 +74,46 @@ export async function insert(table, values) {
 }
 
 /**
+ * Run a SELECT query and return rows as plain objects.
+ * Uses ClickHouse named parameters: {paramName: Type}
+ *
+ * @param {string} sql   - Query string with named params e.g. {anonymousId: String}
+ * @param {object} [params] - { paramName: value }
+ * @returns {Promise<object[]>}
+ */
+export async function queryClickHouse(sql, params = {}) {
+  const ch = getClient();
+  const startTime = Date.now();
+
+  try {
+    const resultSet = await ch.query({
+      query: sql,
+      query_params: params,
+      format: 'JSONEachRow',
+    });
+
+    const rows = await resultSet.json();
+    const duration = Date.now() - startTime;
+
+    logger.debug('ClickHouse query successful', {
+      component: 'clickhouse',
+      rowCount: rows.length,
+      durationMs: duration,
+    });
+
+    return rows;
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    logger.error('ClickHouse query failed', {
+      component: 'clickhouse',
+      durationMs: duration,
+      error: error.message,
+    });
+    throw error;
+  }
+}
+
+/**
  * Health check.
  */
 export async function ping() {
@@ -97,4 +137,4 @@ export async function close() {
   }
 }
 
-export default { getClient, insert, ping, close };
+export default { getClient, insert, queryClickHouse, ping, close };
