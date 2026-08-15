@@ -46,7 +46,7 @@ export function isIdentityEvent(eventName) {
  * @param {string} eventName
  * @returns {{ phone?: string, email?: string, name?: string } | null}
  */
-export function extractIdentity(payload, eventName) {
+export function extractIdentity(payload, _eventName) {
   const props = payload.properties ?? {};
 
   const phone = normalisePhone(

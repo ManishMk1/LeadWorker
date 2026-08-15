@@ -23,6 +23,7 @@ import { close as closeRedis } from '../lib/redis.js';
 import { getHandler } from '../handlers/registry.js';
 import { resolveCustomerId, identifyVisitor } from '../services/IdentityService.js';
 import { scoreEvent } from '../services/ScoringService.js';
+import { advance as advanceLifecycle } from '../services/LifecycleService.js';
 
 const WORKER_NAME      = 'events-consumer';
 const TOPIC            = config.kafka.topic;
@@ -96,6 +97,11 @@ async function processMessage(payload) {
             eventId,
             eventTime,
           });
+
+          // Advance lifecycle stage (fire-and-forget — don't block ClickHouse write)
+          advanceLifecycle({ customerId: result.customerId, source, eventName, eventTime }).catch((err) => {
+            logger.error('Lifecycle advance failed', { component: WORKER_NAME, eventName, error: err.message });
+          });
         }
       } catch (err) {
         logger.error('Identity resolution failed', {
@@ -115,6 +121,11 @@ async function processMessage(payload) {
 
       if (customerId !== null) {
         await scoreEvent({ customerId, anonymousId, source, eventName, eventId, eventTime });
+
+        // Advance lifecycle for known customers (covers non-identity lifecycle events)
+        advanceLifecycle({ customerId, source, eventName, eventTime }).catch((err) => {
+          logger.error('Lifecycle advance failed', { component: WORKER_NAME, eventName, error: err.message });
+        });
       } else {
         logger.debug('Anonymous visitor — skipping score', {
           component: WORKER_NAME, source, eventName, anonymousId,

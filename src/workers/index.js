@@ -5,6 +5,7 @@
  * Add new workers here as the system grows.
  */
 import eventsConsumer from './eventsConsumer.js';
+import decayWorker from './decayWorker.js';
 
 /**
  * All registered workers.
@@ -12,9 +13,9 @@ import eventsConsumer from './eventsConsumer.js';
  */
 const workers = [
   { name: 'events-consumer', module: eventsConsumer },
+  { name: 'decay-worker',    module: decayWorker    },
   // Add more workers here as needed:
   // { name: 'notifications-consumer', module: notificationsConsumer },
-  // { name: 'analytics-consumer', module: analyticsConsumer },
 ];
 
 export default workers;
