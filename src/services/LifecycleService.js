@@ -22,6 +22,7 @@
 
 import { query, getConnection } from '../lib/db.js';
 import { getCachedScoreConfig, setCachedScoreConfig } from '../lib/redis.js';
+import { dispatchSignal } from '../lib/engageSignal.js';
 import logger from '../lib/logger.js';
 
 const COMPONENT = 'LifecycleService';
@@ -168,6 +169,20 @@ async function transition({ customerId, source, toStage, eventName, eventTime, r
     );
 
     await conn.commit();
+
+    // Dispatch lifecycle signal to revolt-engage journey engine
+    const LIFECYCLE_SIGNAL_MAP = {
+      TEST_RIDE_BOOKED:     'test_ride_booked',
+      TEST_RIDE_COMPLETED:  'test_ride_completed',
+      NO_SHOW:              'no_show_marked',
+      BOOKING_CREATED:      'booking_created',
+      BOOKING_STARTED:      'booking_started',
+      RETAIL_COMPLETED:     'retail_completed',
+    };
+    const signalType = LIFECYCLE_SIGNAL_MAP[toStage];
+    if (signalType) {
+      dispatchSignal({ customerId, signalType });
+    }
 
     logger.info('Lifecycle transition', {
       component: COMPONENT, customerId, source,

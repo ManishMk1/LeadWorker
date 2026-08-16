@@ -16,6 +16,7 @@
 import { query, getConnection } from '../lib/db.js';
 import { getCachedScoreConfig, setCachedScoreConfig } from '../lib/redis.js';
 import { markLeadScored } from './LifecycleService.js';
+import { dispatchSignal } from '../lib/engageSignal.js';
 import logger from '../lib/logger.js';
 
 const COMPONENT = 'SegmentService';
@@ -189,6 +190,9 @@ async function applySegmentChange({ conn, customerId, source, from, to, changedB
      VALUES (?, ?, ?, ?, ?, ?)`,
     [customerId, source, from ?? null, to, changedBy, eventName ?? null],
   );
+
+  // Dispatch segment signal to revolt-engage journey engine
+  dispatchSignal({ customerId, signalType: `segment_${to.toLowerCase()}` });
 
   logger.info('Segment changed', { component: COMPONENT, customerId, source, from, to, changedBy, eventName });
 }

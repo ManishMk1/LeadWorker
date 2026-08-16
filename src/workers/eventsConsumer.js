@@ -24,6 +24,7 @@ import { getHandler } from '../handlers/registry.js';
 import { resolveCustomerId, identifyVisitor } from '../services/IdentityService.js';
 import { scoreEvent } from '../services/ScoringService.js';
 import { advance as advanceLifecycle } from '../services/LifecycleService.js';
+import { dispatchSignal } from '../lib/engageSignal.js';
 
 const WORKER_NAME      = 'events-consumer';
 const TOPIC            = config.kafka.topic;
@@ -102,6 +103,9 @@ async function processMessage(payload) {
           advanceLifecycle({ customerId: result.customerId, source, eventName, eventTime }).catch((err) => {
             logger.error('Lifecycle advance failed', { component: WORKER_NAME, eventName, error: err.message });
           });
+
+          // Dispatch signal to revolt-engage (covers identity events like test_ride_booking, book_bike)
+          dispatchSignal({ customerId: result.customerId, signalType: eventName });
         }
       } catch (err) {
         logger.error('Identity resolution failed', {
@@ -126,6 +130,9 @@ async function processMessage(payload) {
         advanceLifecycle({ customerId, source, eventName, eventTime }).catch((err) => {
           logger.error('Lifecycle advance failed', { component: WORKER_NAME, eventName, error: err.message });
         });
+
+        // Dispatch behavioural signal to revolt-engage (fires steps early in running journeys)
+        dispatchSignal({ customerId, signalType: eventName });
       } else {
         logger.debug('Anonymous visitor — skipping score', {
           component: WORKER_NAME, source, eventName, anonymousId,

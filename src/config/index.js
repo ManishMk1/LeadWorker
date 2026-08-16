@@ -49,6 +49,11 @@ const config = {
     level: process.env.LOG_LEVEL || 'info',
     dir: process.env.LOG_DIR || 'logs',
   },
+
+  engage: {
+    enabled: process.env.ENGAGE_ENABLED !== 'false', // enabled by default
+    apiUrl: process.env.ENGAGE_API_URL || 'http://localhost:3001',
+  },
 };
 
 export default config;
